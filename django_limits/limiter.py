@@ -38,15 +38,15 @@ class Limiter(object):
                     if instance.pk:
                         # This instance exists and match the filterset
                         offset = 0
-                    else:
-                        # This is a new object, add one to account for the new matching entry
-                        offset = 1
-
                         # Edge case: If Limit is set for active users, this is to avoid reactivating a user over the set limit
                         if isinstance(instance, User):
                             prev = model.objects.get(pk=instance.pk)
                             if not prev.is_active and instance.is_active:
                                 offset = 1
+                    else:
+                        # This is a new object, add one to account for the new matching entry
+                        offset = 1
+
 
                     count_after_save = qs.count() + offset
 
