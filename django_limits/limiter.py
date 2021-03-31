@@ -1,7 +1,7 @@
 from .exceptions import LimitExceeded
 from django.conf import settings
 from django.db.models import Q
-from django.db.models.sql.where import WhereNode
+from django.contrib.auth.models import User
 
 
 LOOKUPS = {
@@ -41,6 +41,12 @@ class Limiter(object):
                     else:
                         # This is a new object, add one to account for the new matching entry
                         offset = 1
+
+                        # Edge case: If Limit is set for active users, this is to avoid reactivating a user over the set limit
+                        if isinstance(instance, User):
+                            prev = model.objects.get(pk=instance.pk)
+                            if not prev.is_active and instance.is_active:
+                                offset = 1
 
                     count_after_save = qs.count() + offset
 
