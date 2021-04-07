@@ -31,6 +31,12 @@ class Limiter(object):
                 qs = self.get_queryset(model, rule)
                 fs = self.get_filterset(rule)
 
+
+                get_license_func = rule.get("get_license_func")
+                license_data = get_license_func() if get_license_func else None
+
+                limit = license_data['license_max_active_users'] if license_data else rule['limit']
+
                 # If the filterset is None, we don't care about attributes
                 # If there is a filterset, check this new instance matches
                 matches = fs is None or self.instance_matches_filterset(instance, fs)
@@ -50,7 +56,7 @@ class Limiter(object):
 
                     count_after_save = qs.count() + offset
 
-                    if count_after_save > rule['limit'] or rule['limit'] == 0:
+                    if count_after_save > limit or limit == 0:
                         raise LimitExceeded(
                             model=model,
                             details=rule,
